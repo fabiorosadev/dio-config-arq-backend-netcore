@@ -11,5 +11,12 @@
             <param name="loginViewModelinput"></param>
             <returns></returns>
         </member>
+        <member name="M:Curso.Api.Controllers.UsuarioController.Registrar(Curso.Api.Models.Usuarios.RegistroViewModelInput)">
+            <summary>
+            Método para Registrar Login
+            </summary>
+            <param name="registroViewModelinput"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

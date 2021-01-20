@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Curso.Api.Business.Entities;
 using Curso.Api.Filters;
 using Curso.Api.Infraestruture.Data;
 using Curso.Api.Models;
@@ -67,15 +68,40 @@ namespace Curso.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Método para Registrar Login
+        /// </summary>
+        /// <param name="registroViewModelinput"></param>
+        /// <returns></returns>
+        [SwaggerResponse(statusCode: 200, description: "Sucesso ao autenticar", Type = typeof(LoginViewModelinput))]
+        [SwaggerResponse(statusCode: 400, description: "Campos obrigatórios", Type = typeof(ValidaCampoViewModelOutput))]
+        [SwaggerResponse(statusCode: 500, description: "Erro interno", Type = typeof(ErroGenericoViewModel))]
         [HttpPost]
         [Route("registrar")]
         [ValidacaoModelStateCustomizado]
         public IActionResult Registrar(RegistroViewModelInput registroViewModelinput)
         {
 
-            var options = new DbContextOptionsBuilder<CursoDbContext>();
-            options.UseSqlServer("");
-            CursoDbContext contexto = new CursoDbContext(options);
+            var optionsBuilder = new DbContextOptionsBuilder<CursoDbContext>();
+            optionsBuilder.UseSqlServer("Server=localhost;Database=CURSO;user=sa;password=Dev#1234");
+            CursoDbContext contexto = new CursoDbContext(optionsBuilder.Options);
+
+
+            var migracoesPendentes = contexto.Database.GetPendingMigrations();
+            if(migracoesPendentes.Count() > 0)
+            {
+                contexto.Database.Migrate();
+            }
+
+            var usuario = new Usuario()
+            {
+                Login = registroViewModelinput.Login,
+                Senha = registroViewModelinput.Senha,
+                Email = registroViewModelinput.Email
+            };
+
+            contexto.Usuarios.Add(usuario);
+            contexto.SaveChanges();
 
             return Created("", registroViewModelinput);
         }
