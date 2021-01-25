@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Curso.Api.Business.Repositories;
+using Curso.Api.Configurations;
 using Curso.Api.Infraestruture.Data;
 using Curso.Api.Infraestruture.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -98,6 +99,8 @@ namespace Curso.Api
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+            services.AddScoped<ICursoRepository, CursoRepository>();
+            services.AddScoped<IAuthenticationService, JwtService>();
 
             //Continuar em 4:37 do v�deo do curso.
         }

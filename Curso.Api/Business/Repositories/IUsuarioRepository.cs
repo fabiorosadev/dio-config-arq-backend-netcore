@@ -6,6 +6,6 @@ namespace Curso.Api.Business.Repositories
     {
         void Adicionar(Usuario usuario);
         void Comnit();
-        Usuario ObterUsuario();
+        Usuario ObterUsuario(string login);
     }
 }

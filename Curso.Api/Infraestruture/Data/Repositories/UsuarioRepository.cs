@@ -1,5 +1,6 @@
 using Curso.Api.Business.Entities;
 using Curso.Api.Business.Repositories;
+using System.Linq;
 
 namespace Curso.Api.Infraestruture.Data.Repositories
 {
@@ -22,9 +23,9 @@ namespace Curso.Api.Infraestruture.Data.Repositories
             _contexto.SaveChanges();
         }
 
-        public Usuario ObterUsuario()
+        public Usuario ObterUsuario(string login)
         {
-            throw new System.NotImplementedException();
+            return _contexto.Usuarios.FirstOrDefault(u => u.Login == login);
         }
     }
 }

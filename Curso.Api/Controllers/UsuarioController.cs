@@ -49,7 +49,7 @@ namespace Curso.Api.Controllers
         public IActionResult Logar(LoginViewModelinput loginViewModelinput)
         {
 
-            var usuario = _usuarioRepository.ObterUsuario();
+            var usuario = _usuarioRepository.ObterUsuario(loginViewModelinput.Login);
 
             if (usuario == null)
             {
