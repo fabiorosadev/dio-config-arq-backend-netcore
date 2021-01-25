@@ -5,11 +5,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Curso.Api.Business.Repositories;
+using Curso.Api.Infraestruture.Data;
+using Curso.Api.Infraestruture.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -90,7 +94,12 @@ namespace Curso.Api
                 };
             });
 
-            //Continuar em 4:37 do vídeo do curso.
+            services.AddDbContext<CursoDbContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
+            services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+
+            //Continuar em 4:37 do vï¿½deo do curso.
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

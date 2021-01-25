@@ -6,6 +6,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Curso.Api.Business.Entities;
+using Curso.Api.Business.Repositories;
+using Curso.Api.Configurations;
 using Curso.Api.Filters;
 using Curso.Api.Infraestruture.Data;
 using Curso.Api.Models;
@@ -13,6 +15,7 @@ using Curso.Api.Models.Usuarios;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,6 +25,16 @@ namespace Curso.Api.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
+
+        private readonly IUsuarioRepository _usuarioRepository;        
+        private readonly IAuthenticationService _authenticationService;
+
+        public UsuarioController(IUsuarioRepository usuarioRepository, IConfiguration configuration, IAuthenticationService authenticationService)
+        {
+            _usuarioRepository = usuarioRepository;            
+            _authenticationService = authenticationService;
+        }
+
         /// <summary>
         /// Método para Login
         /// </summary>
@@ -36,6 +49,15 @@ namespace Curso.Api.Controllers
         public IActionResult Logar(LoginViewModelinput loginViewModelinput)
         {
 
+            var usuario = _usuarioRepository.ObterUsuario();
+
+            if (usuario == null)
+            {
+                return BadRequest("Houve um erro ao tentar acessar.");
+            }
+
+            //if(usuario.Senha != loginViewModelinput)
+
             var usuarioViewModelOutput = new UsuarioViewModelOutput()
             {
                 Codigo = 1,
@@ -43,23 +65,8 @@ namespace Curso.Api.Controllers
                 Email = "fabiorosa.net@gmail.com"
             };
             
-            var secret = Encoding.ASCII.GetBytes("B40E9EC8-0C54-4738-91DF-CEF5DDEF4996");
-            var symmetricSecurityKey = new SymmetricSecurityKey(secret);
-            var securityTokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, usuarioViewModelOutput.Codigo.ToString()),
-                    new Claim(ClaimTypes.Name, usuarioViewModelOutput.Login.ToString()),
-                    new Claim(ClaimTypes.Email, usuarioViewModelOutput.Email.ToString()),
-                }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256)
-            };
-
-            var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            var tokenGenerated = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
-            var token = jwtSecurityTokenHandler.WriteToken(tokenGenerated);
+            
+            var token = _authenticationService.GerarToken(usuarioViewModelOutput);
 
             return Ok(new
             {
@@ -81,17 +88,12 @@ namespace Curso.Api.Controllers
         [ValidacaoModelStateCustomizado]
         public IActionResult Registrar(RegistroViewModelInput registroViewModelinput)
         {
-
-            var optionsBuilder = new DbContextOptionsBuilder<CursoDbContext>();
-            optionsBuilder.UseSqlServer("Server=localhost;Database=CURSO;user=sa;password=Dev#1234");
-            CursoDbContext contexto = new CursoDbContext(optionsBuilder.Options);
-
-
-            var migracoesPendentes = contexto.Database.GetPendingMigrations();
-            if(migracoesPendentes.Count() > 0)
-            {
-                contexto.Database.Migrate();
-            }
+            
+            // var migracoesPendentes = contexto.Database.GetPendingMigrations();
+            // if(migracoesPendentes.Count() > 0)
+            // {
+            //     contexto.Database.Migrate();
+            // }
 
             var usuario = new Usuario()
             {
@@ -100,8 +102,8 @@ namespace Curso.Api.Controllers
                 Email = registroViewModelinput.Email
             };
 
-            contexto.Usuarios.Add(usuario);
-            contexto.SaveChanges();
+            _usuarioRepository.Adicionar(usuario);  
+            _usuarioRepository.Comnit();          
 
             return Created("", registroViewModelinput);
         }
